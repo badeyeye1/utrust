@@ -26,5 +26,7 @@ config :logger, level: :warn
 # In test we don't send emails.
 config :utrust, Utrust.Mailer, adapter: Swoosh.Adapters.Test
 
+config :tesla, adapter: Tesla.Mock
+
 # Initialize plugs at runtime for faster test compilation
 config :phoenix, :plug_init_mode, :runtime

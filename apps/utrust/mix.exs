@@ -42,7 +42,9 @@ defmodule Utrust.MixProject do
       {:jason, "~> 1.2"},
       {:swoosh, "~> 1.3"},
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:tesla, "~> 1.4.4"},
+      {:hackney, "~> 1.17"}
     ]
   end
 
