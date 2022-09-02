@@ -43,3 +43,9 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
+import React from "react";
+import ReactDOM from "react-dom/client";
+import Transactions from "./transactions";
+const domContainer = document.getElementById("app");
+ReactDOM.createRoot(domContainer).render(React.createElement(Transactions, {name: "Phoenix"}));
+
