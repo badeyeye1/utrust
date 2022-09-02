@@ -100,7 +100,7 @@ defmodule Utrust do
   defp failed_tx(rows) do
     struct(Transaction,
       tx_hash: rows |> hd() |> get_hash(),
-      status: "Failed",
+      status: "failed",
       block: rows |> Enum.at(1) |> get_block(),
       block_confirmations: rows |> Enum.at(1) |> get_confirmations(),
       timestamp: rows |> Enum.at(2) |> get_timestamp(),
@@ -118,7 +118,7 @@ defmodule Utrust do
   end
 
   defp get_status(html) do
-    html |> Floki.text() |> String.split(":") |> Enum.at(-1)
+    html |> Floki.text() |> String.split(":") |> Enum.at(-1) |> String.downcase()
   end
 
   defp get_block(html) do

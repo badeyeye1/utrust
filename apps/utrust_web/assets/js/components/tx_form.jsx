@@ -35,8 +35,6 @@ const TxForm = () => {
       scrape: formState.scrape
     }
   });
-
-  if (error) return `Submission error! ${error.message}`;
  
   return (
     <div>
@@ -99,7 +97,11 @@ const TxForm = () => {
       </form>
 
       {data && <Transaction transaction={data.verifyTransaction} />}
-        
+
+      {error && (<div>
+        <p className='failed'>Trasaction verification failed! Reason: <em>{error.message}</em></p>
+      </div>)}
+
     </div>
   );
 };
