@@ -44,8 +44,19 @@ liveSocket.connect()
 window.liveSocket = liveSocket
 
 import React from "react";
-import ReactDOM from "react-dom/client";
-import Transactions from "./transactions";
-const domContainer = document.getElementById("app");
-ReactDOM.createRoot(domContainer).render(React.createElement(Transactions, {name: "Phoenix"}));
+import * as ReactDOM from 'react-dom/client';
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
+import App from "./TxApp";
 
+const root = ReactDOM.createRoot(document.getElementById('app'));
+
+const client = new ApolloClient({
+  uri: 'http://localhost:4000/api',
+  cache: new InMemoryCache(),
+});
+
+root.render(
+  <ApolloProvider client={client}>
+    <App />
+  </ApolloProvider>,
+);
