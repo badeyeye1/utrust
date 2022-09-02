@@ -1,14 +1,13 @@
 defmodule UtrustWeb.Resolvers.TransactionResolver do
+  alias Utrust.Transaction
+
   def verify_transaction(_root, %{tx_hash: tx_hash, scrape: true}, _info) do
     case Utrust.scrape_transaction(tx_hash) do
-      %{status: "Success"} ->
-        {:ok, %{tx_hash: tx_hash, status: :success}}
+      %Transaction{} = tx ->
+        {:ok, tx}
 
-      %{status: "Failed"} ->
-        {:error, "Transaction failed"}
-
-      _ ->
-        {:error, "Unknown response"}
+      nil ->
+        {:error, "Transaction Not found"}
     end
   end
 

@@ -8,6 +8,8 @@ defmodule Utrust do
   """
   use Tesla, only: [:get]
 
+  alias Utrust.Transaction
+
   plug(Tesla.Middleware.BaseUrl, "https://api.etherscan.io")
 
   plug(Tesla.Middleware.Retry,
@@ -48,6 +50,7 @@ defmodule Utrust do
     Application.get_env(:utrust, :api_key)
   end
 
+  @spec scrape_transaction(String.t()) :: Transaction.t() | nil
   def scrape_transaction(tx_hash) do
     response = HTTPotion.get("https://etherscan.io/tx/" <> tx_hash)
 
@@ -74,12 +77,12 @@ defmodule Utrust do
         failed_tx(rows)
 
       true ->
-        %{}
+        nil
     end
   end
 
   defp successful_tx(rows) do
-    %{
+    struct(Transaction,
       tx_hash: rows |> hd() |> get_hash(),
       status: rows |> Enum.at(1) |> get_status(),
       block: rows |> Enum.at(2) |> get_block(),
@@ -89,13 +92,13 @@ defmodule Utrust do
       to: rows |> Enum.at(5) |> get_wallet_address(),
       value_ether: rows |> Enum.at(6) |> get_value_ether(),
       value_usd: rows |> Enum.at(6) |> get_value_usd(),
-      transaction_fee: rows |> Enum.at(7) |> get_transaction_fee(),
-      transaction_fee_usd: rows |> Enum.at(7) |> get_value_usd()
-    }
+      fee_ether: rows |> Enum.at(7) |> get_transaction_fee(),
+      fee_usd: rows |> Enum.at(7) |> get_value_usd()
+    )
   end
 
   defp failed_tx(rows) do
-    %{
+    struct(Transaction,
       tx_hash: rows |> hd() |> get_hash(),
       status: "Failed",
       block: rows |> Enum.at(1) |> get_block(),
@@ -105,9 +108,9 @@ defmodule Utrust do
       to: rows |> Enum.at(4) |> get_wallet_address(),
       value_ether: rows |> Enum.at(5) |> get_value_ether(),
       value_usd: rows |> Enum.at(5) |> get_value_usd(),
-      transaction_fee: rows |> Enum.at(6) |> get_transaction_fee(),
-      transaction_fee_usd: rows |> Enum.at(6) |> get_value_usd()
-    }
+      fee_ether: rows |> Enum.at(6) |> get_transaction_fee(),
+      fee_usd: rows |> Enum.at(6) |> get_value_usd()
+    )
   end
 
   defp get_hash(html) do
@@ -119,7 +122,7 @@ defmodule Utrust do
   end
 
   defp get_block(html) do
-    html |> Floki.find("a") |> Floki.text() |> String.to_integer()
+    html |> Floki.find("a") |> Floki.text()
   end
 
   defp get_confirmations(html) do
@@ -128,7 +131,6 @@ defmodule Utrust do
     |> Floki.text()
     |> String.split(" ")
     |> hd()
-    |> String.to_integer()
   end
 
   defp get_timestamp(html) do
