@@ -21,9 +21,16 @@ defmodule UtrustWeb.Router do
   end
 
   # Other scopes may use custom stacks.
-  # scope "/api", UtrustWeb do
-  #   pipe_through :api
-  # end
+  scope "/api" do
+    pipe_through :api
+
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: UtrustWeb.Schema,
+      interface: :simple,
+      context: %{pubsub: UtrustWeb.Endpoint}
+
+    forward "/", Absinthe.Plug, schema: UtrustWeb.Schema
+  end
 
   # Enables LiveDashboard only for development
   #

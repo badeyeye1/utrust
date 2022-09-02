@@ -23,7 +23,7 @@ defmodule Utrust.MixProject do
   def application do
     [
       mod: {Utrust.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :httpotion]
     ]
   end
 
@@ -44,7 +44,9 @@ defmodule Utrust.MixProject do
       {:credo, "~> 1.6", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:tesla, "~> 1.4.4"},
-      {:hackney, "~> 1.17"}
+      {:hackney, "~> 1.17"},
+      {:floki, "~> 0.33.1"},
+      {:httpotion, "~> 3.1.0"}
     ]
   end
 
