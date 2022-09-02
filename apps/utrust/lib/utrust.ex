@@ -7,6 +7,7 @@ defmodule Utrust do
   if it comes from the database, an external API or others.
   """
   use Tesla, only: [:get]
+  require Logger
 
   alias Utrust.Transaction
 
@@ -34,8 +35,13 @@ defmodule Utrust do
         |> Jason.decode!()
         |> handle_response()
 
-      {:ok, resp} ->
-        {:error, resp}
+      {:ok, %Tesla.Env{status: 502}} ->
+        {:error, %{message: "Could not contact verification server"}}
+
+      {:ok, response} ->
+        log_unknown_error(response)
+
+        {:error, %{message: "Something went wrong"}}
     end
   end
 
@@ -52,21 +58,30 @@ defmodule Utrust do
 
   @spec scrape_transaction(String.t()) :: Transaction.t() | nil
   def scrape_transaction(tx_hash) do
-    response = HTTPotion.get("https://etherscan.io/tx/" <> tx_hash)
+    case HTTPotion.get("https://etherscan.io/tx/" <> tx_hash) do
+      %HTTPotion.Response{body: body} ->
+        {:ok, html} = Floki.parse_document(body)
 
-    {:ok, html} = Floki.parse_document(response.body)
+        html
+        |> Floki.find("#ContentPlaceHolder1_maintable")
+        |> Floki.find(".row")
+        |> parse_response()
 
-    html
-    |> Floki.find("#ContentPlaceHolder1_maintable")
-    |> Floki.find(".row")
-    |> build_tx()
+      %HTTPotion.ErrorResponse{message: "req_timedout"} ->
+        {:error, %{message: "request timed out"}}
+
+      response ->
+        log_unknown_error(response)
+
+        {:error, %{message: "Something went wrong"}}
+    end
   end
 
   def rows(html) do
     Floki.find(html, ".row")
   end
 
-  def build_tx(rows) do
+  def parse_response(rows) do
     total_rows = length(rows)
 
     cond do
@@ -156,5 +171,11 @@ defmodule Utrust do
 
   defp get_transaction_fee(html) do
     html |> Floki.find("span#ContentPlaceHolder1_spanTxFee > span") |> Floki.text()
+  end
+
+  defp log_unknown_error(error) do
+    Logger.error(
+      "Something wengt wrong while verifying transaction.\n Server responded with #{inspect(error)}"
+    )
   end
 end
