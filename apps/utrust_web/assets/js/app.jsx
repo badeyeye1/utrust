@@ -51,7 +51,7 @@ import App from "./TxApp";
 const root = ReactDOM.createRoot(document.getElementById('app'));
 
 const client = new ApolloClient({
-  uri: 'http://localhost:4000/api',
+  uri: '/api',
   cache: new InMemoryCache(),
 });
 
