@@ -7,6 +7,7 @@ defmodule Utrust do
   if it comes from the database, an external API or others.
   """
   use Tesla, only: [:get]
+  require Logger
 
   alias Utrust.Transaction
 
@@ -50,16 +51,24 @@ defmodule Utrust do
     Application.get_env(:utrust, :api_key)
   end
 
-  @spec scrape_transaction(String.t()) :: Transaction.t() | nil
+  @spec scrape_transaction(String.t()) :: Transaction.t() | {:error, term()}
   def scrape_transaction(tx_hash) do
-    response = HTTPotion.get("https://etherscan.io/tx/" <> tx_hash)
+    case Tesla.get("https://etherscan.io/tx/" <> tx_hash, headers: [{"user-agent", "Mozilla/5.0"}]) do
+      {:ok, %Tesla.Env{body: body, status: 200}} ->
+        {:ok, html} = Floki.parse_document(body)
 
-    {:ok, html} = Floki.parse_document(response.body)
+        html
+        |> Floki.find("#ContentPlaceHolder1_maintable")
+        |> Floki.find(".row")
+        |> build_tx()
 
-    html
-    |> Floki.find("#ContentPlaceHolder1_maintable")
-    |> Floki.find(".row")
-    |> build_tx()
+      {:ok, response} ->
+        Logger.error("Failed to scrape transaction. \nGot the following response from server: #{inspect(response)}")
+        {:error, :sometheg_went_wrong}
+
+      {:error, _resp} = error ->
+        error
+    end
   end
 
   def rows(html) do

@@ -8,6 +8,9 @@ defmodule UtrustWeb.Resolvers.TransactionResolver do
 
       nil ->
         {:error, "Transaction Not found"}
+
+      {:error, _} ->
+        {:error, "Something went wrong. Could not verify transaction"}
     end
   end
 
