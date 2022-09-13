@@ -22,4 +22,7 @@ erl_crash.dump
 # Temporary files, for example, from tests.
 /tmp
 
+# Ignore db directory if using docker-compose
+/db
+
 

@@ -1,0 +1,25 @@
+# Use this file to provision Postgres if you don't have it locally installed:
+# This can be started with
+#   docker-compose up -d`
+# and stopped with
+#   docker-compose down
+#
+# The database is saved in the db folder.
+
+version: "3.9"
+
+services:
+  db:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - 5432:5432
+    restart: on-failure
+    volumes:
+      - ./db:/var/lib/postgresql/data
+
+volumes:
+  db:
