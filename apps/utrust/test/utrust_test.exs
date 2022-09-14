@@ -2,9 +2,15 @@ defmodule UtrustTest do
   use ExUnit.Case
 
   import Tesla.Mock
+  alias Utrust.Transaction
 
-  describe "verify_transaction/1" do
-    test "should return :ok tuple when valid tx_hash is provided" do
+  @scrape_url "https://etherscan.io/tx/"
+  @api_base_url "https://api.etherscan.io/api"
+
+  describe "verify_transaction/2" do
+    test "should return {:ok, Transaction} when transaction was successful" do
+      tx_hash = "tx_hash"
+
       mock_request(%{
         status: "1",
         message: "OK",
@@ -14,33 +20,117 @@ defmodule UtrustTest do
         }
       })
 
-      assert {:ok, :transaction_successful} = Utrust.verify_transaction("tx_hash")
+      assert {:ok, %Transaction{tx_hash: ^tx_hash, status: "success"}} =
+               Utrust.verify_transaction(tx_hash, false)
     end
 
-    test "returns error tuple when tx_hash does not exists" do
+    test "should return {:ok, Transaction} when transaction failed" do
+      tx_hash = "tx_hash"
+      error_text = "Bad jump destination"
+
       mock_request(%{
         status: "1",
         message: "OK",
         result: %{
           isError: "1",
-          errDescription: "Bad jump destination"
+          errDescription: error_text
         }
       })
 
-      assert {:error, "Bad jump destination"} = Utrust.verify_transaction("tx_hash")
+      assert {:ok, %Transaction{tx_hash: ^tx_hash, status: "failed", reason: ^error_text}} =
+               Utrust.verify_transaction(tx_hash, false)
     end
 
-    test "should retrun error tuple when arg is not a string" do
-      assert {:error, :invalid_argument} = Utrust.verify_transaction(1)
-      assert {:error, :invalid_argument} = Utrust.verify_transaction([])
-      assert {:error, :invalid_argument} = Utrust.verify_transaction(["Hello"])
-      assert {:error, :invalid_argument} = Utrust.verify_transaction(%{})
+    test "should return error tuple when status code is not 200" do
+      tx_hash = "utrust"
+
+      mock(fn
+        %{method: :get, url: @api_base_url} ->
+          {:ok, %Tesla.Env{status: 400}}
+      end)
+
+      assert {:error, _} = Utrust.verify_transaction(tx_hash, false)
+    end
+
+    test "should return error tuple when any other error occurs" do
+      tx_hash = "utrust"
+
+      mock(fn
+        %{method: :get, url: @api_base_url} ->
+          {:error, :nxdomain}
+      end)
+
+      assert {:error, _} = Utrust.verify_transaction(tx_hash, false)
+    end
+
+    # using scrapper
+    test "Scrapper: should return {:ok, Transaction} when transaction was successful" do
+      tx_hash = "0x7b6d0e8d812873260291c3f8a9fa99a61721a033a01e5c5af3ceb5e1dc9e7bd0"
+
+      result = Utrust.TransactionFixtures.successful_tx_fixture()
+
+      mock(fn
+        %{method: :get, url: @scrape_url <> ^tx_hash} ->
+          {:ok, %Tesla.Env{status: 200, body: result}}
+      end)
+
+      assert {:ok, %Transaction{status: "success", tx_hash: ^tx_hash}} =
+               Utrust.verify_transaction(tx_hash, true)
+    end
+
+    test "Scrapper: should return {:ok, Transaction} when transaction failed" do
+      tx_hash = "0x15f8e5ea1079d9a0bb04a4c58ae5fe7654b5b2b4463375ff7ffb490aa0032f3a"
+
+      result = Utrust.TransactionFixtures.failed_tx_fixture()
+
+      mock(fn
+        %{method: :get, url: @scrape_url <> ^tx_hash} ->
+          {:ok, %Tesla.Env{status: 200, body: result}}
+      end)
+
+      assert {:ok, %Transaction{status: "failed", tx_hash: ^tx_hash}} =
+               Utrust.verify_transaction(tx_hash, true)
+    end
+
+    test "Scrapper: should return {:error, :not_found} when transaction is not found" do
+      tx_hash = "not_found"
+
+      result = Utrust.TransactionFixtures.not_found_tx_fixture()
+
+      mock(fn
+        %{method: :get, url: @scrape_url <> ^tx_hash} ->
+          {:ok, %Tesla.Env{status: 200, body: result}}
+      end)
+
+      assert {:error, :not_found} = Utrust.verify_transaction(tx_hash, true)
+    end
+
+    test "Scrapper: should return error tuple when status code is not 200" do
+      tx_hash = "bad_hash"
+
+      mock(fn
+        %{method: :get, url: @scrape_url <> ^tx_hash} ->
+          {:ok, %Tesla.Env{status: 404, body: ""}}
+      end)
+
+      assert {:error, _} = Utrust.verify_transaction(tx_hash, true)
+    end
+
+    test "Scrapper: should return error tuple when any other error occurs" do
+      tx_hash = "utrust"
+
+      mock(fn
+        %{method: :get, url: @scrape_url <> ^tx_hash} ->
+          {:error, :nxdomain}
+      end)
+
+      assert {:error, _} = Utrust.verify_transaction(tx_hash, true)
     end
   end
 
   defp mock_request(result) do
     mock(fn
-      %{method: :get, url: "https://api.etherscan.io/api"} ->
+      %{method: :get, url: @api_base_url} ->
         json(result)
     end)
   end

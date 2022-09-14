@@ -1,5 +1,5 @@
-defmodule Utrust.Transaction do
-  @moduledoc false
+defmodule Ether.Transaction do
+   @moduledoc false
 
   @type t() :: %__MODULE__{
           tx_hash: String.t(),

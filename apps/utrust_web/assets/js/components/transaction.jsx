@@ -7,6 +7,7 @@ const Transaction = (props) => {
       <ul>
         <li><strong>TxHash: </strong> {transaction.txHash} </li>
         <li className={transaction.status}><strong>Status:</strong> {transaction.status} </li>
+       {transaction.reason && <li className={transaction.status}><strong>Reason:</strong> {transaction.reason} </li>}
         { transaction.from && (<li><strong>From: </strong> {transaction.from}</li>)}
         { transaction.to && (<li><strong>To:</strong> {transaction.to}</li>) }
         { transaction.block && (<li><strong>Block:</strong> {transaction.block} - ({transaction.blockConfirmations})</li>)}

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useMutation, gql } from '@apollo/client';
 import Transaction from './transaction';
 
+//  $txHash: String!
+//     $scrape: Boolean
+
 const VERIFY_TX_MUTATION = gql`
   mutation TxMutation(
-    $txHash: String!
-    $scrape: Boolean
+    $input: VerifyTransactionInput!
   ) {
-    verifyTransaction(txHash: $txHash, scrape: $scrape) {
+    verifyTransaction(input: $input) {
       txHash
       status
       from
@@ -18,6 +20,7 @@ const VERIFY_TX_MUTATION = gql`
       valueUsd
       feeEther
       feeUsd
+      reason
     }
   }
 `;
@@ -30,9 +33,10 @@ const TxForm = () => {
   });
 
   const [verifyTransaction, { data, loading, error }] = useMutation(VERIFY_TX_MUTATION, {
-    variables: {
+    variables: {input: {
       txHash: formState.txHash,
       scrape: formState.scrape
+    }
     }
   });
  
