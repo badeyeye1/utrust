@@ -3,6 +3,7 @@ defmodule UtrustWeb.SchemaTest do
 
   import Tesla.Mock
 
+
   @query """
   mutation verifyTransaction($verifyTransaction: VerifyTransactionInput!) {
     verifyTransaction(input: $verifyTransaction) {
