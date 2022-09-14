@@ -45,7 +45,8 @@ defmodule Utrust.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:tesla, "~> 1.4.4"},
       {:hackney, "~> 1.17"},
-      {:floki, "~> 0.33.1"}
+      {:floki, "~> 0.33.1"},
+      {:ether, in_umbrella: true}
     ]
   end
 
