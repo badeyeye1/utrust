@@ -1,5 +1,13 @@
 import Config
 
+config :utrust, Utrust.EventStore,
+  serializer: Commanded.Serialization.JsonSerializer,
+  username: "postgres",
+  password: "postgres",
+  database: "utrust_eventstore_dev",
+  hostname: "localhost",
+  pool_size: 10
+
 # Configure your database
 config :utrust, Utrust.Repo,
   username: "postgres",

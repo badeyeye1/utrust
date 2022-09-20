@@ -46,7 +46,11 @@ defmodule Utrust.MixProject do
       {:tesla, "~> 1.4.4"},
       {:hackney, "~> 1.17"},
       {:floki, "~> 0.33.1"},
-      {:ether, in_umbrella: true}
+      {:commanded, "~> 1.4"},
+      {:commanded_eventstore_adapter, "~> 1.4"},
+      {:exconstructor, "~> 1.2.6"},
+      {:ether, in_umbrella: true},
+      {:commanded_ecto_projections, "~> 1.3"}
     ]
   end
 
@@ -55,9 +59,11 @@ defmodule Utrust.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get", "ecto.setup"],
+      setup: ["deps.get", "ecto.setup", "event_store.setup"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
+      "event_store.setup": ["event_store.create", "event_store.init"],
+      "event_store.reset": ["event_store.drop", "event_store.create", "event_store.init"],
       test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]
     ]
   end

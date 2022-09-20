@@ -11,7 +11,9 @@ defmodule Utrust.Application do
       # Start the Ecto repository
       Utrust.Repo,
       # Start the PubSub system
-      {Phoenix.PubSub, name: Utrust.PubSub}
+      {Phoenix.PubSub, name: Utrust.PubSub},
+      Utrust.App,
+      Utrust.Payment.Supervisor
       # Start a worker by calling: Utrust.Worker.start_link(arg)
       # {Utrust.Worker, arg}
     ]
